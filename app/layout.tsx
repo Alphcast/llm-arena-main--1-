@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 
 import { PostHogProvider } from "@/features/analytics/posthog-provider";
 import { ThemeProvider } from "@/features/theme/theme-provider";
+import { publicEnv } from "@/infrastructure/public-env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,7 +43,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
-          <ClerkProvider>
+          <ClerkProvider publishableKey={publicEnv.clerkPublishableKey}>
             <PostHogProvider>{children}</PostHogProvider>
           </ClerkProvider>
         </ThemeProvider>

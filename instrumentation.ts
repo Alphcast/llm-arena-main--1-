@@ -9,5 +9,11 @@ export const register = async (): Promise<void> => {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   const { serverEnv } = await import("./infrastructure/env");
-  serverEnv();
+  const env = serverEnv();
+  if (!env.DATABASE_URL) {
+    console.warn("[LLM Arena] DATABASE_URL not set — in-memory persistence active");
+  }
+  if (!env.OPENROUTER_API_KEY) {
+    console.warn("[LLM Arena] OPENROUTER_API_KEY not set — configure in Settings to enable model racing");
+  }
 };

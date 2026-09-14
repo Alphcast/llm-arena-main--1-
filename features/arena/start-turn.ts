@@ -6,6 +6,7 @@ import { trackPromptSent } from "@/infrastructure/analytics-events";
 import { MAX_SELECTED_MODELS, MIN_SELECTED_MODELS } from "@/infrastructure/model-catalog";
 import { database } from "@/infrastructure/database";
 import { ensureAppUser } from "@/infrastructure/current-user";
+import { hasClerkConfigured } from "@/infrastructure/env";
 import { fetchFreeModelCatalog } from "@/infrastructure/fetch-model-catalog";
 
 /**
@@ -69,7 +70,8 @@ const refuse = (error: string): StartTurnResult =>
   Object.freeze({ ok: false as const, error });
 
 export const startTurn = async (input: StartTurnInput): Promise<StartTurnResult> => {
-  const { userId: clerkId } = await auth();
+  const clerkAuth = await auth().catch(() => ({ userId: null }));
+  const clerkId = clerkAuth?.userId ?? (hasClerkConfigured() ? null : "guest_preview_user");
 
   if (!clerkId) {
     return refuse("Sign in to send a prompt to the arena.");

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { LeaderboardScreen } from "@/features/leaderboard/leaderboard-screen";
 import { getLeaderboardStandings } from "@/features/leaderboard/leaderboard-standings";
 import { findAppUserId } from "@/infrastructure/current-user";
+import { hasClerkConfigured } from "@/infrastructure/env";
 
 /**
  * "Just me" cannot exist without an account, same reasoning as feature 7's
@@ -16,7 +17,8 @@ export default async function LeaderboardPage({
   const { view: rawView } = await searchParams;
   const view = rawView === "me" ? "me" : "everyone";
 
-  const { userId: clerkId } = await auth();
+  const clerkAuth = await auth().catch(() => ({ userId: null }));
+  const clerkId = clerkAuth?.userId ?? (hasClerkConfigured() ? null : "guest_preview_user");
   const viewerId = clerkId ? await findAppUserId(clerkId) : null;
 
   const needsSignIn = view === "me" && viewerId === null;

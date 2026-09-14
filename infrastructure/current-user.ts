@@ -30,5 +30,10 @@ export const findAppUserId = async (clerkId: string): Promise<string | null> => 
     select: { id: true },
   });
 
+  if (!user && clerkId === "guest_preview_user") {
+    const created = await ensureAppUser("guest_preview_user");
+    return created.id;
+  }
+
   return user?.id ?? null;
 };

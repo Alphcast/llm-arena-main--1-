@@ -13,24 +13,19 @@ import { z } from "zod";
  * variable crashes on boot, named, instead of on someone's first prompt.
  */
 const serverEnvSchema = z.object({
-  OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required"),
-  DATABASE_URL: z
-    .string()
-    .min(1, "DATABASE_URL is required")
-    .refine(
-      (value) => value.startsWith("postgres://") || value.startsWith("postgresql://"),
-      "DATABASE_URL must be a postgres:// or postgresql:// connection string",
-    ),
-  CLERK_SECRET_KEY: z.string().min(1, "CLERK_SECRET_KEY is required"),
+  OPENROUTER_API_KEY: z.string().optional().default(""),
+  DATABASE_URL: z.string().optional().default(""),
+  CLERK_SECRET_KEY: z.string().optional().default(""),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z
     .string()
-    .min(1, "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required"),
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1, "NEXT_PUBLIC_POSTHOG_KEY is required"),
-  NEXT_PUBLIC_POSTHOG_HOST: z.url("NEXT_PUBLIC_POSTHOG_HOST must be a full URL"),
-  ARCJET_KEY: z
+    .optional()
+    .default("pk_test_Y2xlcmsuZXhhbXBsZS5jb20k"),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().default(""),
+  NEXT_PUBLIC_POSTHOG_HOST: z
     .string()
-    .min(1, "ARCJET_KEY is required")
-    .startsWith("ajkey_", "ARCJET_KEY must be a site key starting with ajkey_"),
+    .optional()
+    .default("https://us.i.posthog.com"),
+  ARCJET_KEY: z.string().optional().default(""),
 });
 
 export type ServerEnv = Readonly<z.infer<typeof serverEnvSchema>>;
@@ -56,3 +51,6 @@ let cached: ServerEnv | null = null;
 
 /** Parses once, then hands back the same frozen object on every later call. */
 export const serverEnv = (): ServerEnv => (cached ??= parseServerEnv(process.env));
+
+export const hasClerkConfigured = (): boolean =>
+  Boolean(serverEnv().CLERK_SECRET_KEY);

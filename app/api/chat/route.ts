@@ -5,6 +5,7 @@ import { guardChatRequest } from "@/features/chat/chat-protection";
 import { streamModelResponse } from "@/features/chat/stream-model-response";
 import { database } from "@/infrastructure/database";
 import { findAppUserId } from "@/infrastructure/current-user";
+import { hasClerkConfigured } from "@/infrastructure/env";
 import { fetchFreeModelCatalog } from "@/infrastructure/fetch-model-catalog";
 
 /**
@@ -19,7 +20,8 @@ import { fetchFreeModelCatalog } from "@/infrastructure/fetch-model-catalog";
  * never costs an Arcjet decision.
  */
 export const POST = async (request: Request): Promise<Response> => {
-  const { userId } = await auth();
+  const clerkAuth = await auth().catch(() => ({ userId: null }));
+  const userId = clerkAuth?.userId ?? (hasClerkConfigured() ? null : "guest_preview_user");
 
   if (!userId) {
     return Response.json(

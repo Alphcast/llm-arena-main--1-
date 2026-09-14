@@ -15,6 +15,7 @@ const posthogAssetHost = posthogHost.replace(
 );
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   async rewrites() {
     return [
       {

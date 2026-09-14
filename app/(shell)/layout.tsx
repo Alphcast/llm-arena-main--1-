@@ -7,6 +7,7 @@ import { listThreadHistory } from "@/features/shell/thread-history";
 import { type ThreadGroup } from "@/features/shell/thread-groups";
 import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { findAppUserId } from "@/infrastructure/current-user";
+import { hasClerkConfigured } from "@/infrastructure/env";
 import { ThreadHistoryProvider } from "@/infrastructure/thread-history-store";
 
 /**
@@ -31,7 +32,8 @@ import { ThreadHistoryProvider } from "@/infrastructure/thread-history-store";
  */
 const loadThreadHistory = async (): Promise<readonly ThreadGroup[]> => {
   try {
-    const { userId: clerkId } = await auth();
+    const clerkAuth = await auth().catch(() => ({ userId: null }));
+    const clerkId = clerkAuth?.userId ?? (hasClerkConfigured() ? null : "guest_preview_user");
     const appUserId = clerkId ? await findAppUserId(clerkId) : null;
 
     return appUserId ? await listThreadHistory(appUserId) : [];

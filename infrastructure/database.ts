@@ -16,14 +16,27 @@ import { serverEnv } from "./env";
  * Construction is lazy so that `next build`, which evaluates route modules to
  * collect page data, never needs a real DATABASE_URL.
  */
+import { createInMemoryPrisma } from "./in-memory-db";
+
 const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
 };
 
-const createPrismaClient = (): PrismaClient =>
-  new PrismaClient({
-    adapter: new PrismaPg({ connectionString: serverEnv().DATABASE_URL }),
-  });
+const createPrismaClient = (): PrismaClient => {
+  const url = serverEnv().DATABASE_URL;
+  if (!url || (!url.startsWith("postgres://") && !url.startsWith("postgresql://"))) {
+    return createInMemoryPrisma();
+  }
+
+  try {
+    return new PrismaClient({
+      adapter: new PrismaPg({ connectionString: url }),
+    });
+  } catch (error) {
+    console.warn("[database] Failed to initialize Prisma adapter, falling back to in-memory store", error);
+    return createInMemoryPrisma();
+  }
+};
 
 export const database = (): PrismaClient => {
   const client = globalForPrisma.prisma ?? createPrismaClient();

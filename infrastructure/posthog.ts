@@ -16,7 +16,16 @@ import { serverEnv } from "./env";
  */
 let cached: PostHog | null = null;
 
-export const posthogServer = (): PostHog =>
-  (cached ??= new PostHog(serverEnv().NEXT_PUBLIC_POSTHOG_KEY, {
-    host: serverEnv().NEXT_PUBLIC_POSTHOG_HOST,
+export const posthogServer = (): PostHog => {
+  const env = serverEnv();
+  if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
+    return {
+      capture: () => {},
+      identify: () => {},
+      shutdown: async () => {},
+    } as unknown as PostHog;
+  }
+  return (cached ??= new PostHog(env.NEXT_PUBLIC_POSTHOG_KEY, {
+    host: env.NEXT_PUBLIC_POSTHOG_HOST,
   }));
+};

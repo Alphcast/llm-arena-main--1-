@@ -6,6 +6,7 @@ import { ArenaScreen } from "@/features/arena/arena-screen";
 import { castVoteAction } from "@/features/voting/cast-vote-action";
 import { database } from "@/infrastructure/database";
 import { findAppUserId } from "@/infrastructure/current-user";
+import { hasClerkConfigured } from "@/infrastructure/env";
 import { fetchFreeModelCatalog } from "@/infrastructure/fetch-model-catalog";
 import { defaultModelSelection } from "@/infrastructure/model-catalog";
 
@@ -63,7 +64,8 @@ export default async function ThreadPage({
 
   if (!thread) notFound();
 
-  const { userId: clerkId } = await auth();
+  const clerkAuth = await auth().catch(() => ({ userId: null }));
+  const clerkId = clerkAuth?.userId ?? (hasClerkConfigured() ? null : "guest_preview_user");
   const viewerId = clerkId ? await findAppUserId(clerkId) : null;
   const isOwner = viewerId !== null && viewerId === thread.userId;
 

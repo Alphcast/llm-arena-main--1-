@@ -14,4 +14,8 @@
 export const publicEnv = Object.freeze({
   posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-}) satisfies Readonly<Record<string, string | undefined>>;
+  clerkPublishableKey:
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    "pk_test_Y2xlcmsuZXhhbXBsZS5jb20k",
+  hasClerkSecret: Boolean(process.env.CLERK_SECRET_KEY),
+}) satisfies Readonly<Record<string, string | boolean | undefined>>;
